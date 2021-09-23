@@ -44,8 +44,8 @@ Thumbs.db
 *.json
 *._pycache_
 *.pytest_cache
-**/Eigen
-**/data
+**/Eigen # Eigen is already installed 
+**/data # exclude pcl data
 **/build
 
 # Models
