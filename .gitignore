@@ -44,9 +44,10 @@ Thumbs.db
 *.json
 *._pycache_
 *.pytest_cache
-**/Eigen # Eigen is already installed 
+**/Eigen/** 
 **/data # exclude pcl data
 **/build
+**/sensors/data
 
 # Models
 *.tar.gz
