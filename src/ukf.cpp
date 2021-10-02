@@ -12,6 +12,9 @@ UKF::UKF() {
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
+  // is initialized to false, set to true in first call of ProcessMeasurement
+  is_initialized_ = false;
+
   // initial state vector
   x_ = Eigen::VectorXd(5);
 
@@ -40,11 +43,6 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
   // end provided by sensor manufacturer
-
-  /**
-   * TODO: Complete the initialization. See ukf.h for other member properties.
-   * Hint: one or more values initialized above might be wildly off...
-   */
 
   n_x_ = x_.size(); // get size of state vector
   n_aug_ = n_x_ + 2; // get size of augmented state vector
@@ -77,11 +75,51 @@ UKF::UKF() {
 UKF::~UKF() {}
 
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-  /**
-   * TODO: Complete this function! Make sure you switch between lidar and radar
-   * measurements.
-   */
+  
+  // if not initialized, initialize
+  if (!is_initialized_){
+    P_ = Eigen::MatrixXd::Identity(n_x_, n_x_); // initialize state covariance matrix
+    double px;  // initial state x position
+    double py;  // initial state y position  
+    double v;  // initial state velocity 
+    double yaw = 0;  // initial state yaw angle
+    double yay_rate = 0;  // initial state yaw angle rate
 
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      // convert radar from polar to cartesian coordinates
+      double rho = meas_package.raw_measurements_[0]; // range
+      double phi = meas_package.raw_measurements_[1]; // bearing angle
+      double rho_dot = meas_package.raw_measurements_[2]; // range rate
+      px = rho * cos(phi);
+      py = rho * sin(phi);
+      v = rho_dot;
+
+    } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      // initialize state with laser measurement
+      px  = meas_package.raw_measurements_[0]; // x position
+      py = meas_package.raw_measurements_[1]; // y position
+      v = 0; // velocity is 0 because we don't know it yet
+    }
+    // insert variables into state vector
+    x_ << px, py, v, yaw, yay_rate;
+    // set initialized to true
+    is_initialized_ = true;
+    time_us_ = meas_package.timestamp_; //  measure time
+    return; 
+
+  } else { // not initialized
+    // compute delta time
+    double dt = (meas_package.timestamp_ - time_us_) / 1000000.0;
+    // predict state
+    Prediction(dt);
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      // update state with radar measurement
+      UpdateRadar(meas_package);
+    } else  if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      // update state with laser measurement
+      UpdateLidar(meas_package);
+    }
+  }
 }
 
 void UKF::Prediction(double delta_t) {
