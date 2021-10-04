@@ -136,6 +136,7 @@ void UKF::Prediction(double delta_t) {
   Eigen::MatrixXd Xsig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1); // augmented sigma points matrix
 
   // create augmented mean state vector
+  x_aug.fill(0.0);
   x_aug.head(5) = x_; // first 5 elements fill with x_
   x_aug(5) = 0; // initial value for longitudinal acceleration noise
   x_aug(6) = 0; // initial value for yaw acceleration noise
@@ -154,12 +155,10 @@ void UKF::Prediction(double delta_t) {
     Xsig_aug.col(i + 1) = x_aug + sqrt_lambda * sqrt_P_aug.col(i); 
     Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt_lambda * sqrt_P_aug.col(i);
   }
-  
-  ///// predict sigma points /////
-  // TODO: Move this to a smart pointer
-  Eigen::MatrixXd Xsig_pred = Eigen::MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   for (int i = 0; i < 2 * n_aug_ + 1; i++){
+
+    ////// Predict sigma points //////
     // extract state values for better readability
     double px = Xsig_aug(0, i);
     double py = Xsig_aug(1, i);
@@ -192,16 +191,27 @@ void UKF::Prediction(double delta_t) {
     yaw_accel_p = yaw_accel_p + delta_t * nu_yaw_accel; // add yaw acceleration noise to predicted yaw acceleration
 
     // write predicted sigma point into right column
-    Xsig_pred(0, i) = px_p;
-    Xsig_pred(1, i) = py_p;
-    Xsig_pred(2, i) = v_p;
-    Xsig_pred(3, i) = yaw_p;
-    Xsig_pred(4, i) = yaw_accel_p;
+    Xsig_pred_(0, i) = px_p;
+    Xsig_pred_(1, i) = py_p;
+    Xsig_pred_(2, i) = v_p;
+    Xsig_pred_(3, i) = yaw_p;
+    Xsig_pred_(4, i) = yaw_accel_p;
   }
 
-  ///// predict mean and covariance /////
+  //// predict mean and covariance /////
+  // x_ = Xsig_pred_ * weights_;
 
+  // // predicted state mean
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+  //   x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+  // }
 
+  // // predicted state covariance matrix
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+  //   Eigen::VectorXd x_diff = Xsig_pred.col(i) - x_; // state difference
+  //   NormalizeAngle(&x_diff(3)); // pass yaw angle by reference
+  //   P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
+  // }
 } // end of Prediction function
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
@@ -220,4 +230,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
    * covariance, P_.
    * You can also calculate the radar NIS, if desired.
    */
+}
+
+void UKF::NormalizeAngle(double *angle) {
+
+  while (*angle > M_PI) 
+    *angle -= 2.0 * M_PI;
+  while (*angle < -M_PI) 
+    *angle += 2.0 * M_PI;
 }
