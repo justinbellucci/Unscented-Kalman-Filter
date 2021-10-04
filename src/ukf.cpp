@@ -53,6 +53,7 @@ UKF::UKF() {
   n_aug_ = n_x_ + 2; // get size of augmented state vector
   lambda_ = 3 - n_aug_; // define spreading parameter
   // initialize params for predicting mean and covariance with augmented state vector
+  // TODO: make more efficient
   weights_ = Eigen::VectorXd(2 * n_aug_ + 1); // define weights vector size
   weights_(0) = lambda_ / (lambda_ + n_aug_); 
   double weight_n = 0.5 / (lambda_ + n_aug_); // save some computation time
@@ -127,12 +128,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 }
 
 void UKF::Prediction(double delta_t) {
-  /**
-   * TODO: Complete this function! Estimate the object's location. 
-   * Modify the state vector, x_. Predict sigma points, the state, 
-   * and the state covariance matrix.
-   */
+
   // create augmented matrices
+  // TODO: Move these to smart pointers
   Eigen::VectorXd x_aug = Eigen::VectorXd(n_aug_); // augmented state mean vector
   Eigen::MatrixXd P_aug = Eigen::MatrixXd(n_aug_, n_aug_); // augmented state covariance matrix
   Eigen::MatrixXd Xsig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1); // augmented sigma points matrix
@@ -157,8 +155,54 @@ void UKF::Prediction(double delta_t) {
     Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt_lambda * sqrt_P_aug.col(i);
   }
   
-  // predict sigma points
-}
+  ///// predict sigma points /////
+  // TODO: Move this to a smart pointer
+  Eigen::MatrixXd Xsig_pred = Eigen::MatrixXd(n_x_, 2 * n_aug_ + 1);
+
+  for (int i = 0; i < 2 * n_aug_ + 1; i++){
+    // extract state values for better readability
+    double px = Xsig_aug(0, i);
+    double py = Xsig_aug(1, i);
+    double v = Xsig_aug(2, i);
+    double yaw = Xsig_aug(3, i);
+    double yaw_accel = Xsig_aug(4, i);
+    double nu_accel = Xsig_aug(5, i);
+    double nu_yaw_accel = Xsig_aug(6, i);
+
+    double px_p; // predicted x position
+    double py_p; // predicted y position
+
+    // avoid division by zero
+    if (fabs(yaw_accel) > 0.001) {
+      px_p = px + v / yaw_accel * (sin(yaw + yaw_accel * delta_t) - sin(yaw));
+      py_p = py + v / yaw_accel * (-cos(yaw + yaw_accel * delta_t) + cos(yaw));
+    } else {
+      px_p = px + v * cos(yaw) * delta_t;
+      py_p = py + v * sin(yaw) * delta_t;
+    }
+
+    // TODO: more efficient method?
+    px_p = px_p + 0.5 * delta_t * delta_t * cos(yaw) * nu_accel; // add acceleration noise to predicted x position
+    py_p = py_p + 0.5 * delta_t * delta_t * sin(yaw) * nu_accel; // add acceleration noise to predicted y position
+    double v_p = v; 
+    v_p = v_p + nu_accel * delta_t; // add acceleration noise to predicted velocity
+    double yaw_p = yaw; 
+    yaw_p = yaw_p + 0.5 * delta_t * delta_t * nu_yaw_accel; // add yaw acceleration noise to predicted yaw angle
+    double yaw_accel_p = yaw_accel; 
+    yaw_accel_p = yaw_accel_p + delta_t * nu_yaw_accel; // add yaw acceleration noise to predicted yaw acceleration
+
+    // write predicted sigma point into right column
+    Xsig_pred(0, i) = px_p;
+    Xsig_pred(1, i) = py_p;
+    Xsig_pred(2, i) = v_p;
+    Xsig_pred(3, i) = yaw_p;
+    Xsig_pred(4, i) = yaw_accel_p;
+  }
+
+  ///// predict mean and covariance /////
+
+
+} // end of Prediction function
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
   /**
