@@ -156,9 +156,8 @@ void UKF::Prediction(double delta_t) {
     Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt_lambda * sqrt_P_aug.col(i);
   }
 
+  ////// Predict sigma points //////
   for (int i = 0; i < 2 * n_aug_ + 1; i++){
-
-    ////// Predict sigma points //////
     // extract state values for better readability
     double px = Xsig_aug(0, i);
     double py = Xsig_aug(1, i);
@@ -199,19 +198,19 @@ void UKF::Prediction(double delta_t) {
   }
 
   //// predict mean and covariance /////
-  // x_ = Xsig_pred_ * weights_;
-
-  // // predicted state mean
-  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
-  //   x_ = x_ + weights_(i) * Xsig_pred_.col(i);
-  // }
+  // predicted state mean
+  x_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    x_ = x_ + weights_(i) * Xsig_pred_.col(i);
+  }
 
   // // predicted state covariance matrix
-  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
-  //   Eigen::VectorXd x_diff = Xsig_pred.col(i) - x_; // state difference
-  //   NormalizeAngle(&x_diff(3)); // pass yaw angle by reference
-  //   P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
-  // }
+  P_.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    Eigen::VectorXd x_diff = Xsig_pred_.col(i) - x_; // state difference
+    NormalizeAngle(&x_diff(3)); // pass yaw angle by reference
+    P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
+  }
 } // end of Prediction function
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
@@ -233,7 +232,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 }
 
 void UKF::NormalizeAngle(double *angle) {
-
   while (*angle > M_PI) 
     *angle -= 2.0 * M_PI;
   while (*angle < -M_PI) 
