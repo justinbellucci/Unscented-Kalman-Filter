@@ -95,9 +95,11 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double rho = meas_package.raw_measurements_[0]; // range
       double phi = meas_package.raw_measurements_[1]; // bearing angle
       double rho_dot = meas_package.raw_measurements_[2]; // range rate
-      px = rho * cos(phi);
-      py = rho * sin(phi);
-      v = rho_dot;
+      double px = rho * cos(phi);
+      double py = rho * sin(phi);
+      double vx = rho_dot * cos(phi);
+      double vy = rho_dot * sin(phi);
+      double v = sqrt(vx * vx + vy * vy);
 
     } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
       // initialize state with laser measurement
@@ -115,6 +117,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   } else { // initialized
     // compute delta time
     double dt = (meas_package.timestamp_ - time_us_) / 1000000.0;
+    time_us_ = meas_package.timestamp_; //  measure time
     // predict state
     Prediction(dt);
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
