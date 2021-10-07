@@ -2,6 +2,7 @@
 #define UKF_H
 
 #include "Eigen/Dense"
+// #include <Eigen/Core>
 #include "measurement_package.h"
 
 class UKF {
@@ -98,13 +99,26 @@ class UKF {
     double lambda_;
 
     // measurement noise covariance matrix - radar 
-    Eigen::MatrixXd R_radar_;
+    Eigen::Matrix3d R_radar_;
 
     // measurement noise covariance matrix - lidar. i.e. laser
-    Eigen::MatrixXd R_laser_;
+    Eigen::Matrix2d R_laser_;
+
+    Eigen::Vector3d z; // measurement vector
 
   private:
     
+    // Zsig
+    Eigen::MatrixXd Zsig;
+
+    // z_pred
+    Eigen::VectorXd z_pred;
+
+    // innovation covariance matrix S 
+    Eigen::MatrixXd S;
+
+    int n_z_;
+
     /**
      * Normalizes the yaw angle to be between -pi and pi
      * @param angle difference between the predicted and state yaw angle
