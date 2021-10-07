@@ -228,9 +228,7 @@ void UKF::Prediction(double delta_t) {
   P_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     Eigen::VectorXd x_diff = Xsig_pred_.col(i) - x_; // state difference
-    // NormalizeAngle(&x_diff(3)); // pass yaw angle by reference
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
+    NormalizeAngle(&x_diff(3)); 
 
     P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
   }
@@ -248,16 +246,6 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
   
   //*************** Prediction step ***************//
-  // const int n_z_ = 3; // measurement dimension
-
-  // create matrix for sigma points in measurement space
-  // Eigen::MatrixXd Zsig = Eigen::MatrixXd::Zero(n_z_, 2 * n_aug_ + 1);
-
-  // mean predicted measurement
-  // Eigen::VectorXd z_pred = Eigen::VectorXd(n_z_);
-
-  // measurement covariance matrix S
-  // Eigen::MatrixXd S = Eigen::MatrixXd(n_z_, n_z_);
 
   // transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
@@ -271,8 +259,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     double v2 = sin(yaw) * v;
 
     // measurement model
-    Zsig(0, i) = sqrt(p_x * p_x + p_y * p_y);                         // rho in m
-    Zsig(1, i) = atan2(p_y, p_x);                                     // phi in rad
+    Zsig(0, i) = sqrt(p_x * p_x + p_y * p_y);     // rho in m
+    Zsig(1, i) = atan2(p_y, p_x);                 // phi in rad
 
     // avoid division by zero
     if (Zsig(0, i) < 0.001) {
@@ -288,14 +276,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     z_pred = z_pred + weights_(i) * Zsig.col(i);
   }
 
-  // innovation covariance matrix S
+  // predicted measurement covariance matrix S
   S.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     // residual
     Eigen::VectorXd z_diff = Zsig.col(i) - z_pred;
-    // NormalizeAngle(&z_diff(1)); // pass yaw angle by reference
-    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    NormalizeAngle(&z_diff(1)); 
 
     S += weights_(i) * z_diff * z_diff.transpose();
   }
@@ -312,16 +298,12 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     // residual
     Eigen::VectorXd z_diff = Zsig.col(i) - z_pred;
-    // NormalizeAngle(&z_diff(1)); // pass yaw angle by reference
-    while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+    NormalizeAngle(&z_diff(1));
 
     // state difference
     Eigen::VectorXd x_diff = Xsig_pred_.col(i) - x_;
-    // NormalizeAngle(&x_diff(3)); // pass yaw angle by reference
-    while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
-    
+    NormalizeAngle(&x_diff(3));
+
     Tc += weights_(i) * x_diff * z_diff.transpose();
   }
 
@@ -330,9 +312,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   // update state mean and covariance matrix
   Eigen::VectorXd z_diff = z - z_pred;
-
-  while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
-  while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+  NormalizeAngle(&z_diff(1)); 
 
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S * K.transpose();
