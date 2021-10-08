@@ -21,7 +21,7 @@ class UKF {
      * ProcessMeasurement
      * @param meas_package The latest measurement data of either radar or laser
      */
-    void ProcessMeasurement(MeasurementPackage meas_package);
+    void ProcessMeasurement(MeasurementPackage &meas_package);
 
     /**
      * Prediction Predicts sigma points, the state, and the state covariance
@@ -34,13 +34,13 @@ class UKF {
      * Updates the state and the state covariance matrix using a laser measurement
      * @param meas_package The measurement at k+1
      */
-    void UpdateLidar(MeasurementPackage meas_package);
+    void UpdateLidar(MeasurementPackage &meas_package);
 
     /**
      * Updates the state and the state covariance matrix using a radar measurement
      * @param meas_package The measurement at k+1
      */
-    void UpdateRadar(MeasurementPackage meas_package);
+    void UpdateRadar(MeasurementPackage &meas_package);
 
     // initially set to false, set to true in first call of ProcessMeasurement
     bool is_initialized_;
@@ -58,7 +58,6 @@ class UKF {
     // state covariance matrix
     // TODO: move to smart pointer
     Eigen::MatrixXd P_;
-    // std::unique_ptr<Eigen::MatrixXd> P_;
 
     // predicted sigma points matrix
     Eigen::MatrixXd Xsig_pred_;
@@ -101,11 +100,9 @@ class UKF {
 
     // measurement noise covariance matrix - radar 
     Eigen::Matrix3d R_radar_;
-    // std::unique_ptr<Eigen::Matrix3d> R_radar_;
 
     // measurement noise covariance matrix - lidar. i.e. laser
     Eigen::Matrix2d R_laser_;
-    // std::unique_ptr<Eigen::Matrix2d> R_laser_;
 
     Eigen::Vector3d z; // measurement vector
 

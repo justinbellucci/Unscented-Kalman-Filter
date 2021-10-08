@@ -60,7 +60,7 @@ UKF::UKF() {
   n_aug_ = n_x_ + 2; // get size of augmented state vector
   lambda_ = 3 - n_aug_; // define spreading parameter
   // initialize params for predicting mean and covariance with augmented state vector
-  // TODO: make more efficient
+
   weights_ = Eigen::VectorXd(2 * n_aug_ + 1); // define weights vector size
   weights_(0) = lambda_ / (lambda_ + n_aug_); 
   double weight_n = 0.5 / (lambda_ + n_aug_); // save some computation time
@@ -87,7 +87,7 @@ UKF::UKF() {
 
 UKF::~UKF() {}
 
-void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
+void UKF::ProcessMeasurement(MeasurementPackage &meas_package) {
   
   // if not initialized, initialize
   if (!is_initialized_){
@@ -148,9 +148,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 } // end ProcessMeasurement
 
 void UKF::Prediction(double &delta_t) {
-
-  // create augmented matrices
-  // TODO: Move to smart pointers
 
   // create augmented mean state vector
   Eigen::VectorXd x_aug = Eigen::VectorXd::Zero(n_aug_); // augmented state mean vector
@@ -236,7 +233,7 @@ void UKF::Prediction(double &delta_t) {
   }
 } // end of Prediction function
 
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
+void UKF::UpdateLidar(MeasurementPackage &meas_package) {
 
   //**************** Prediction ****************//
   Zsig = Xsig_pred_.block(0, 0, n_z_, 2 * n_aug_ + 1); // measurement matrix
@@ -286,7 +283,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 } // end of UpdateLidar function
 
 
-void UKF::UpdateRadar(MeasurementPackage meas_package) {
+void UKF::UpdateRadar(MeasurementPackage &meas_package) {
   
   //*************** Prediction step ***************//
 
