@@ -6,7 +6,7 @@
 UKF::UKF() {
 
   // if this is false, laser measurements will be ignored (except during init)
-  use_laser_ = true;
+  use_lidar_ = true;
 
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
@@ -71,9 +71,15 @@ UKF::UKF() {
               0, std_radphi_ * std_radphi_, 0,
               0, 0, std_radrd_ * std_radrd_;
 
-  // measurement noise covariance matrix for laser
-  R_laser_ << std_laspx_ * std_laspx_, 0,
+  // measurement noise covariance matrix for lidar
+  R_lidar_ << std_laspx_ * std_laspx_, 0,
               0, std_laspy_ * std_laspy_;
+
+  // Initialize NIS values
+  NIS_radar_ = 0;
+  NIS_radar_filename_ = "NIS_radar_log.txt";
+  NIS_lidar_ = 0;
+  NIS_lidar_filename_ = "NIS_lidar_log.txt";
 }
 
 UKF::~UKF() {}
@@ -125,7 +131,7 @@ void UKF::ProcessMeasurement(MeasurementPackage& meas_package) {
     z_pred_ = Eigen::VectorXd::Zero(n_z_); 
     S_ = Eigen::MatrixXd::Zero(n_z_, n_z_); 
     UpdateRadar(meas_package);
-  } else  if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+  } else  if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_lidar_) {
     // update state with laser measurement
     n_z_ = 2; 
     Z_sig_ = Eigen::MatrixXd::Zero(n_z_, 2 * n_aug_ + 1); 
@@ -252,7 +258,7 @@ void UKF::UpdateLidar(MeasurementPackage& meas_package) {
 
     S_ += weights_(i) * z_diff * z_diff.transpose();
   }
-  S_ = S_ + R_laser_;
+  S_ = S_ + R_lidar_;
 
   //////////////////////////////////////////////////////////////
   ////////////////////// Update State //////////////////////////
@@ -260,7 +266,7 @@ void UKF::UpdateLidar(MeasurementPackage& meas_package) {
   Eigen::VectorXd z = meas_package.raw_measurements_;
 
   // calculate cross correlation Tc
-  Eigen::MatrixXd Tc_laser = Eigen::MatrixXd::Zero(n_x_, n_z_);
+  Eigen::MatrixXd Tc_lidar_ = Eigen::MatrixXd::Zero(n_x_, n_z_);
 
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     // residual
@@ -268,17 +274,21 @@ void UKF::UpdateLidar(MeasurementPackage& meas_package) {
     // state difference
     Eigen::VectorXd x_diff = X_sig_pred_.col(i) - x_;
 
-    Tc_laser += weights_(i) * x_diff * z_diff.transpose();
+    Tc_lidar_ += weights_(i) * x_diff * z_diff.transpose();
   }
 
   // calculate Kalman gain K
-  Eigen::MatrixXd K = Tc_laser * S_.inverse();
+  Eigen::MatrixXd K = Tc_lidar_ * S_.inverse();
 
   // update state mean and covariance matrix
   Eigen::VectorXd z_diff = z - z_pred_;
 
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S_ * K.transpose();
+
+  // NIS
+  NIS_lidar_ = z_diff.transpose() * S_.inverse() * z_diff;
+  RecordNIS(NIS_lidar_, NIS_lidar_filename_);
 
 } // end of UpdateLidar function
 
@@ -359,6 +369,10 @@ void UKF::UpdateRadar(MeasurementPackage &meas_package) {
   x_ = x_ + K * z_diff;
   P_ = P_ - K * S_ * K.transpose();
 
+  // NIS
+  NIS_radar_ = z_diff.transpose() * S_.inverse() * z_diff;
+  RecordNIS(NIS_radar_, NIS_radar_filename_);
+  
 } // end of UpdateRadar function
 
 void UKF::NormalizeAngle(double* angle) {
@@ -366,4 +380,10 @@ void UKF::NormalizeAngle(double* angle) {
     *angle -= 2.0 * M_PI;
   while (*angle < -M_PI) 
     *angle += 2.0 * M_PI;
+}
+
+void UKF::RecordNIS(double& NIS, std::string& filename) {
+  std::ofstream log;
+  log.open(filename, std::ios_base::app);
+  log << NIS << std::endl;
 }

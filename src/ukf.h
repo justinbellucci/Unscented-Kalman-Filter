@@ -3,7 +3,10 @@
 
 #include "Eigen/Dense"
 #include "measurement_package.h"
-
+#include <fstream>
+#include <iostream>
+#include <filesystem>
+#include <string>
 class UKF {
   public:
     
@@ -33,8 +36,8 @@ class UKF {
     // process first measurement if not already done
     bool is_initialized_;
 
-    // if false, laser measurements will be ignored (except for init)
-    bool use_laser_;
+    // if false, lidar measurements will be ignored (except for init)
+    bool use_lidar_;
 
     // if false, radar measurements will be ignored (except for init)
     bool use_radar_;
@@ -89,8 +92,8 @@ class UKF {
     // measurement noise covariance matrix - radar 
     Eigen::Matrix3d R_radar_;
 
-    // measurement noise covariance matrix - lidar. i.e. laser
-    Eigen::Matrix2d R_laser_;
+    // measurement noise covariance matrix - lidar
+    Eigen::Matrix2d R_lidar_;
 
     // measurement vector
     Eigen::Vector3d z_; 
@@ -111,12 +114,23 @@ class UKF {
     Eigen::MatrixXd Tc_radar_;
 
     // lidar cross correlation matrix
-    Eigen::MatrixXd Tc_laser_;
+    Eigen::MatrixXd Tc_lidar_;
+
+    // NIS for radar
+    double NIS_radar_;
+    std::string NIS_radar_filename_;
+    
+    // NIS for lidar
+    double NIS_lidar_;
+    std::string NIS_lidar_filename_;
 
     // Normalize the angle to be between -2pi and 2pi
     // @param angle difference between the predicted and state yaw angle
     void NormalizeAngle(double *angle);
 
+    // record NIS values to a text file
+    // @param filename name of the file to write to
+    void RecordNIS(double& NIS, std::string& filename);
 };
 
 #endif  // UKF_H
