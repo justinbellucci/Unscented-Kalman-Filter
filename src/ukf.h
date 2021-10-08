@@ -101,9 +101,11 @@ class UKF {
 
     // measurement noise covariance matrix - radar 
     Eigen::Matrix3d R_radar_;
+    // std::unique_ptr<Eigen::Matrix3d> R_radar_;
 
     // measurement noise covariance matrix - lidar. i.e. laser
     Eigen::Matrix2d R_laser_;
+    // std::unique_ptr<Eigen::Matrix2d> R_laser_;
 
     Eigen::Vector3d z; // measurement vector
 
