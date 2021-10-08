@@ -2,65 +2,51 @@
 #define UKF_H
 
 #include "Eigen/Dense"
-#include <memory>
 #include "measurement_package.h"
 
 class UKF {
   public:
-    /**
-     * Constructor
-     */
+    
+    // constructor
     UKF();
 
-    /**
-     * Destructor
-     */
+    // destructor
     virtual ~UKF();
 
-    /**
-     * ProcessMeasurement
-     * @param meas_package The latest measurement data of either radar or laser
-     */
+    // ProcessMeasurement
+    //  @param meas_package The latest measurement data of either radar or laser
     void ProcessMeasurement(MeasurementPackage &meas_package);
 
-    /**
-     * Prediction Predicts sigma points, the state, and the state covariance
-     * matrix
-     * @param delta_t Time between k and k+1 in s
-     */
+    // Predicts sigma points, the state, and the state covariance
+    // matrix
+    // @param delta_t Time between k and k+1 in s
     void Prediction(double &delta_t);
 
-    /**
-     * Updates the state and the state covariance matrix using a laser measurement
-     * @param meas_package The measurement at k+1
-     */
+    // Updates the state and the state covariance matrix using a laser measurement
+    // @param meas_package The measurement at k+1
     void UpdateLidar(MeasurementPackage &meas_package);
 
-    /**
-     * Updates the state and the state covariance matrix using a radar measurement
-     * @param meas_package The measurement at k+1
-     */
+    // Updates the state and the state covariance matrix using a radar measurement
+    // @param meas_package The measurement at k+1
     void UpdateRadar(MeasurementPackage &meas_package);
 
-    // initially set to false, set to true in first call of ProcessMeasurement
+    // process first measurement if not already done
     bool is_initialized_;
 
-    // if this is false, laser measurements will be ignored (except for init)
+    // if false, laser measurements will be ignored (except for init)
     bool use_laser_;
 
-    // if this is false, radar measurements will be ignored (except for init)
+    // if false, radar measurements will be ignored (except for init)
     bool use_radar_;
 
-    // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
-    // TODO: move to smart pointer
+    // state vector: [px py velocity yaw_angle yaw_rate] in SI units and rad
     Eigen::VectorXd x_;
 
     // state covariance matrix
-    // TODO: move to smart pointer
     Eigen::MatrixXd P_;
 
     // predicted sigma points matrix
-    Eigen::MatrixXd Xsig_pred_;
+    Eigen::MatrixXd X_sig_pred_;
 
     // time when the state is true, in us
     long long time_us_;
@@ -98,37 +84,37 @@ class UKF {
     // Sigma point spreading parameter
     double lambda_;
 
+  private:
+    
     // measurement noise covariance matrix - radar 
     Eigen::Matrix3d R_radar_;
 
     // measurement noise covariance matrix - lidar. i.e. laser
     Eigen::Matrix2d R_laser_;
 
-    Eigen::Vector3d z; // measurement vector
+    // measurement vector
+    Eigen::Vector3d z_; 
 
-  private:
-    
-    // Zsig
-    Eigen::MatrixXd Zsig;
+    // predicted mesurement sigma points matrix
+    Eigen::MatrixXd Z_sig_;
 
-    // z_pred
-    Eigen::VectorXd z_pred;
+    // predicted mesurement mean
+    Eigen::VectorXd z_pred_;
 
     // innovation covariance matrix S 
-    Eigen::MatrixXd S;
+    Eigen::MatrixXd S_;
 
+    // dimension of measurement vector
     int n_z_;
 
     // radar cross correlation matrix
-    Eigen::MatrixXd Tc_radar;
+    Eigen::MatrixXd Tc_radar_;
 
     // lidar cross correlation matrix
-    Eigen::MatrixXd Tc_laser;
+    Eigen::MatrixXd Tc_laser_;
 
-    /**
-     * Normalizes the yaw angle to be between -2pi and 2pi
-     * @param angle difference between the predicted and state yaw angle
-     */
+    // Normalize the angle to be between -2pi and 2pi
+    // @param angle difference between the predicted and state yaw angle
     void NormalizeAngle(double *angle);
 
 };
