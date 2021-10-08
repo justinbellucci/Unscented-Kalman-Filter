@@ -28,7 +28,7 @@ class UKF {
      * matrix
      * @param delta_t Time between k and k+1 in s
      */
-    void Prediction(double delta_t);
+    void Prediction(double &delta_t);
 
     /**
      * Updates the state and the state covariance matrix using a laser measurement
@@ -58,6 +58,7 @@ class UKF {
     // state covariance matrix
     // TODO: move to smart pointer
     Eigen::MatrixXd P_;
+    // std::unique_ptr<Eigen::MatrixXd> P_;
 
     // predicted sigma points matrix
     Eigen::MatrixXd Xsig_pred_;
@@ -126,7 +127,7 @@ class UKF {
     Eigen::MatrixXd Tc_laser;
 
     /**
-     * Normalizes the yaw angle to be between -pi and pi
+     * Normalizes the yaw angle to be between -2pi and 2pi
      * @param angle difference between the predicted and state yaw angle
      */
     void NormalizeAngle(double *angle);

@@ -6,6 +6,8 @@
  * Initializes Unscented Kalman filter
  */
 UKF::UKF() {
+
+  
   // if this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
@@ -145,7 +147,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
 } // end ProcessMeasurement
 
-void UKF::Prediction(double delta_t) {
+void UKF::Prediction(double &delta_t) {
 
   // create augmented matrices
   // TODO: Move to smart pointers
@@ -236,11 +238,6 @@ void UKF::Prediction(double delta_t) {
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
-  // n_z_ = 2; 
-  // Zsig = Eigen::MatrixXd::Zero(n_z_, 2 * n_aug_ + 1); 
-  // z_pred = Eigen::VectorXd::Zero(n_z_); 
-  // S = Eigen::MatrixXd::Zero(n_z_, n_z_); 
-  
   //**************** Prediction ****************//
   Zsig = Xsig_pred_.block(0, 0, n_z_, 2 * n_aug_ + 1); // measurement matrix
   

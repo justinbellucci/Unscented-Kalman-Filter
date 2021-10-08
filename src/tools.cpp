@@ -20,6 +20,7 @@ double Tools::noise(double stddev, long long seedNum)
 lmarker Tools::lidarSense(Car& car, pcl::visualization::PCLVisualizer::Ptr& viewer, long long timestamp, bool visualize)
 {
 	MeasurementPackage meas_package;
+	// std::unique_ptr<MeasurementPackage> meas_package = std::make_unique<MeasurementPackage>();
 	meas_package.sensor_type_ = MeasurementPackage::LASER;
   	meas_package.raw_measurements_ = VectorXd(2);
 
