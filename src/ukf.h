@@ -2,7 +2,7 @@
 #define UKF_H
 
 #include "Eigen/Dense"
-// #include <Eigen/Core>
+#include <memory>
 #include "measurement_package.h"
 
 class UKF {
@@ -118,6 +118,12 @@ class UKF {
     Eigen::MatrixXd S;
 
     int n_z_;
+
+    // radar cross correlation matrix
+    Eigen::MatrixXd Tc_radar;
+
+    // lidar cross correlation matrix
+    Eigen::MatrixXd Tc_laser;
 
     /**
      * Normalizes the yaw angle to be between -pi and pi

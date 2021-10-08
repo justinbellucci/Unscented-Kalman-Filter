@@ -7,7 +7,7 @@
  */
 UKF::UKF() {
   // if this is false, laser measurements will be ignored (except during init)
-  use_laser_ = false;
+  use_laser_ = true;
 
   // if this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
@@ -235,13 +235,59 @@ void UKF::Prediction(double delta_t) {
 } // end of Prediction function
 
 void UKF::UpdateLidar(MeasurementPackage meas_package) {
-  /**
-   * TODO: Complete this function! Use lidar data to update the belief 
-   * about the object's position. Modify the state vector, x_, and 
-   * covariance, P_.
-   * You can also calculate the lidar NIS, if desired.
-   */
-}
+
+  // n_z_ = 2; 
+  // Zsig = Eigen::MatrixXd::Zero(n_z_, 2 * n_aug_ + 1); 
+  // z_pred = Eigen::VectorXd::Zero(n_z_); 
+  // S = Eigen::MatrixXd::Zero(n_z_, n_z_); 
+  
+  //**************** Prediction ****************//
+  Zsig = Xsig_pred_.block(0, 0, n_z_, 2 * n_aug_ + 1); // measurement matrix
+  
+  // mean predicted measurement
+  z_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    z_pred = z_pred + weights_(i) * Zsig.col(i);
+  }
+
+  // predicted measurement covariance matrix S
+  S.fill(0.0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    // residual
+    Eigen::VectorXd z_diff = Zsig.col(i) - z_pred;
+    NormalizeAngle(&z_diff(1));
+
+    S += weights_(i) * z_diff * z_diff.transpose();
+  }
+  S = S + R_laser_;
+
+  //**************** Update ****************//`
+  Eigen::VectorXd z = meas_package.raw_measurements_;
+
+  // calculate cross correlation Tc
+  Eigen::MatrixXd Tc_laser = Eigen::MatrixXd::Zero(n_x_, n_z_);
+
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    // residual
+    Eigen::VectorXd z_diff = Zsig.col(i) - z_pred;
+
+    // state difference
+    Eigen::VectorXd x_diff = Xsig_pred_.col(i) - x_;
+
+    Tc_laser += weights_(i) * x_diff * z_diff.transpose();
+  }
+
+  // calculate Kalman gain K
+  Eigen::MatrixXd K = Tc_laser * S.inverse();
+
+  // update state mean and covariance matrix
+  Eigen::VectorXd z_diff = z - z_pred;
+
+  x_ = x_ + K * z_diff;
+  P_ = P_ - K * S * K.transpose();
+
+} // end of UpdateLidar function
+
 
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
   
@@ -293,7 +339,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   Eigen::Vector3d z = meas_package.raw_measurements_;
 
   // calculate cross correlation Tc
-  Eigen::MatrixXd Tc = Eigen::MatrixXd::Zero(n_x_, n_z_);
+  Eigen::MatrixXd Tc_radar = Eigen::MatrixXd::Zero(n_x_, n_z_);
   // Tc.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     // residual
@@ -304,11 +350,11 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Eigen::VectorXd x_diff = Xsig_pred_.col(i) - x_;
     NormalizeAngle(&x_diff(3));
 
-    Tc += weights_(i) * x_diff * z_diff.transpose();
+    Tc_radar += weights_(i) * x_diff * z_diff.transpose();
   }
 
   // calculate Kalman gain K
-  Eigen::MatrixXd K = Tc * S.inverse();
+  Eigen::MatrixXd K = Tc_radar * S.inverse();
 
   // update state mean and covariance matrix
   Eigen::VectorXd z_diff = z - z_pred;
