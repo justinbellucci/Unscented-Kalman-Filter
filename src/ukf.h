@@ -128,7 +128,7 @@ class UKF {
     // @param angle difference between the predicted and state yaw angle
     void NormalizeAngle(double *angle);
 
-    // record NIS values to a text file
+    // Record NIS values to a text file
     // @param filename name of the file to write to
     void RecordNIS(double& NIS, std::string& filename);
 };
