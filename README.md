@@ -1,5 +1,5 @@
 # Unscented Kalman Filter
-This project implements an Uncented Kalman Filter to estimate the state of multiple cars on a highway environment using noisy lidar and sensor data. Data is fused to estimate the state of each car, represented by their position and velocity in the x and y directions. A UKF object, which implments the Constant Turn Rate Constant Velocity (CTRV) motion model, is updated at each time step to estimate the state of each car. Accuracy is evaluated by comparing the state of each car to the ground truth using Root Mean Square Error (RMSE).
+This project implements an Unscented Kalman Filter to estimate the state of multiple cars on a highway environment using noisy lidar and sensor data. Data is fused to estimate the state of each car, represented by their position and velocity in the x and y directions. A UKF object, which implments the Constant Turn Rate Constant Velocity (CTRV) motion model, is updated at each time step to estimate the state of each car. Accuracy is evaluated by comparing the state of each car to the ground truth using Root Mean Square Error (RMSE).
 
 
 <img src="media/UKF_radar.gif" width="700" />
