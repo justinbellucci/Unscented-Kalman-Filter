@@ -86,7 +86,7 @@ bool visualize_radar = true;
 <img src="media/UKF_radar.gif" width="700" />
 
 ## Consistancy Check 
-Normalization Innovation Squared (NIS) is calculated for each sensor and plotted following a chi-squared distribution at each UKF update time step. NIS is the difference between the predicted measurement and the actual measurment normalized in relation to the covariance matrix `S`. The `./jupyer/NIS.ipynb` notebook contains the code for plotting the NIS values. In 5% of all cases the NIS is higher then 7.815 as plotted by the green dashed line below. In this case the CTRV motion model underestimates the uncertianty in the system. Noise parameters can be adjusted to reduce the uncertainty in the system. 
+Normalization Innovation Squared (NIS) is calculated for each sensor and plotted following a chi-squared distribution at each UKF update time step. NIS is the difference between the predicted measurement and the actual measurment normalized in relation to the covariance matrix `S`. The `./jupyer/NIS.ipynb` notebook contains the code for plotting the NIS values. In 5% of all cases the NIS is higher then 7.815 as plotted by the green dashed line below.  
 
 <img src="media/NIS_plot.png" width="700" />
 
