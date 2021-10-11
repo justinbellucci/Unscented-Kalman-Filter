@@ -5,7 +5,6 @@
 #include "measurement_package.h"
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 #include <string>
 class UKF {
   public:
@@ -18,20 +17,20 @@ class UKF {
 
     // ProcessMeasurement
     //  @param meas_package The latest measurement data of either radar or laser
-    void ProcessMeasurement(MeasurementPackage &meas_package);
+    void ProcessMeasurement(MeasurementPackage& meas_package);
 
     // Predicts sigma points, the state, and the state covariance
     // matrix
     // @param delta_t Time between k and k+1 in s
-    void Prediction(double &delta_t);
+    void Prediction(double& delta_t);
 
     // Updates the state and the state covariance matrix using a laser measurement
     // @param meas_package The measurement at k+1
-    void UpdateLidar(MeasurementPackage &meas_package);
+    void UpdateLidar(MeasurementPackage& meas_package);
 
     // Updates the state and the state covariance matrix using a radar measurement
     // @param meas_package The measurement at k+1
-    void UpdateRadar(MeasurementPackage &meas_package);
+    void UpdateRadar(MeasurementPackage& meas_package);
 
     // process first measurement if not already done
     bool is_initialized_;
@@ -126,7 +125,7 @@ class UKF {
 
     // Normalize the angle to be between -2pi and 2pi
     // @param angle difference between the predicted and state yaw angle
-    void NormalizeAngle(double *angle);
+    void NormalizeAngle(double* angle);
 
     // Record NIS values to a text file
     // @param filename name of the file to write to

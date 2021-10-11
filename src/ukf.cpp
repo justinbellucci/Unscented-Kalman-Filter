@@ -22,15 +22,17 @@ UKF::UKF() {
   P_  << 1, 0, 0, 0, 0,
          0, 1, 0, 0, 0,
          0, 0, 1, 0, 0,
-         0, 0, 0, 1, 0,
-         0, 0, 0, 0, 1;
+         0, 0, 0, 0.05, 0,
+         0, 0, 0, 0, 0.05;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 0.9; 
+  // std_a_ = 0.9; 
+  std_a_ = 5.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.4;
-  
+  // std_yawdd_ = 0.4;
+  std_yawdd_ = 1.7;
+
   ///////////////////////////////////////////////////////////////
   /////////////// Provided by sensor manufacturer ///////////////
 
@@ -193,7 +195,6 @@ void UKF::Prediction(double& delta_t) {
       py_p = py + v * sin(yaw) * delta_t;
     }
 
-    // TODO: more efficient method?
     double v_p = v;
     double yaw_p = yaw + yaw_accel * delta_t;
     double yaw_accel_p = yaw_accel; 
@@ -254,7 +255,6 @@ void UKF::UpdateLidar(MeasurementPackage& meas_package) {
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     // residual
     Eigen::VectorXd z_diff = Z_sig_.col(i) - z_pred_;
-    NormalizeAngle(&z_diff(1));
 
     S_ += weights_(i) * z_diff * z_diff.transpose();
   }
