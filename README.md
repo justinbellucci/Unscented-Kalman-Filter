@@ -24,9 +24,9 @@ The following dependencies are required to run the program locally.
 
 1. Clone the repository and navigate to the downloaded folder.
 ```
-git clone https://github.com/justinbellucci/Uncented-Kalman-Filter.git  
+git clone https://github.com/justinbellucci/Unscented-Kalman-Filter.git  
 
-cd Uncented-Kalman-Filter
+cd Unscented-Kalman-Filter
 ```
 
 2. Make a build directory in the top level directory:
