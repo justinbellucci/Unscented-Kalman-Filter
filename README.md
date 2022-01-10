@@ -1,5 +1,5 @@
 # Unscented Kalman Filter
-This project implements an Unscented Kalman Filter to estimate the state of multiple cars on a highway environment using noisy lidar and sensor data. Data is fused to estimate the state of each car, represented by their position and velocity in the x and y directions. A UKF object, which implments the Constant Turn Rate Constant Velocity (CTRV) motion model, is updated at each time step to estimate the state of each car. Accuracy is evaluated by comparing the state of each car to the ground truth using Root Mean Square Error (RMSE).
+This project implements an Unscented Kalman Filter to estimate the state of multiple cars on a highway environment using noisy lidar and sensor data. Data is fused to estimate the state of each car, represented by their position and velocity in the x and y directions. A UKF object, which implements the Constant Turn Rate Constant Velocity (CTRV) motion model, is updated at each time step to estimate the state of each car. Accuracy is evaluated by comparing the state of each car to the ground truth using Root Mean Square Error (RMSE).
 
 
 <img src="media/UKF_radar.gif" width="700" />
@@ -47,7 +47,7 @@ mkdir build && cd build
 The UKF is implemented as a class containing the following methods:
 
 ```void ProcessMeasurement(MeasurementPackage &meas_package);```   
-  * Initializes the state and covariance matrices according to the CTRV motion model. Radar and Lidar matrices are initialized separatly as the CTRV motion model is defines Radar as non-linear and Lidar as linear.   
+  * Initializes the state and covariance matrices according to the CTRV motion model. Radar and Lidar matrices are initialized separately as the CTRV motion model is defines Radar as non-linear and Lidar as linear.   
 
 ```void Prediction(double &delta_t);```  
   * Sigma points are generated and predicted according to the CTRV model. The predicted sigma points are used to predict the state and covariance matrices.   
@@ -62,7 +62,7 @@ The UKF is implemented as a class containing the following methods:
  The simulation can be manipulated by changing parameters in the `highway.h` file. 
  
  ---
- The image below shows the predicted state of each car 2 seconds into the future illustrated by the green spheres. 
+ The image below shows the predicted state of each car two seconds into the future illustrated by the green spheres. 
 
 ```
 double projectedTime = 2;
@@ -71,7 +71,7 @@ int projectedSteps = 6;
 <img src="media/UKF_predict.gif" width="700" />
 
 ---
-Radar is not visualized in this image. The red spheres reprent the Lidar data and the green spheres represent the predicted state of each car.
+Radar is not visualized in this image. The red spheres illustrate the center of the lidar point cloud, while green spheres and arrows represent the predicted direction and velocity of the cars.
 ```
 bool visualize_radar = false;
 ``` 
@@ -79,17 +79,17 @@ bool visualize_radar = false;
 <img src="media/UKF_lidar.gif" width="700" />
 
 ---
-The radar is visulized by the purple arrows.
+The radar is visualized by the purple arrows.
 ```
 bool visualize_radar = true;
 ```
 <img src="media/UKF_radar.gif" width="700" />
 
 ## Consistancy Check 
-Normalization Innovation Squared (NIS) is calculated for each sensor and plotted following a chi-squared distribution at each UKF update time step. NIS is the difference between the predicted measurement and the actual measurment normalized in relation to the covariance matrix `S`. The `./jupyer/NIS.ipynb` notebook contains the code for plotting the NIS values. In 5% of all cases the NIS is higher then 7.815 as plotted by the green dashed line below.  
+Normalization Innovation Squared (NIS) is calculated for each sensor and plotted following a chi-squared distribution at each UKF update time step. NIS is the difference between the predicted measurement and the actual measurement normalized in relation to the covariance matrix `S`. The `./jupyer/NIS.ipynb` notebook contains the code for plotting the NIS values. In 5% of all cases the NIS is higher then 7.815 as plotted by the green dashed line below.  
 
 <img src="media/NIS_plot.png" width="700" />
 
 ## Code Style
 
-This project folows [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+This project follows [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
