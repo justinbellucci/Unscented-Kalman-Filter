@@ -47,7 +47,7 @@ mkdir build && cd build
 The UKF is implemented as a class containing the following methods:
 
 ```void ProcessMeasurement(MeasurementPackage &meas_package);```   
-  * Initializes the state and covariance matrices according to the CTRV motion model. Radar and Lidar matrices are initialized separately as the CTRV motion model is defines Radar as non-linear and Lidar as linear.   
+  * Initializes the state and covariance matrices according to the CTRV motion model if not already initialized. If already initialized, the state and covariance matrices are updated.
 
 ```void Prediction(double &delta_t);```  
   * Sigma points are generated and predicted according to the CTRV model. The predicted sigma points are used to predict the state and covariance matrices.   
